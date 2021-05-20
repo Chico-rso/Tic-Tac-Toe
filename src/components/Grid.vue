@@ -29,8 +29,9 @@ export default {
     return {
       activePlayer: "X",
       gameStatus: "turn",
-      gameStatusMessage: `0's turn`,
-      gameStatusColor: "statusTurn",
+      winPlayer: "",
+      // gameStatusMessage: `X's turn`,
+      // gameStatusColor: "statusTurn",
       moves: 0,
       cells: {
         1: "",
@@ -62,15 +63,49 @@ export default {
       this.gameStatus = this.changeGameStatus();
       this.changePlayer();
     });
+    Event.$on("gridReset", () => {
+      Object.assign(this.$data, this.$options.data());
+    });
   },
   computed: {
     nonActivePlayer() {
-      if (this.activePlayer === "0") {
+      if (this.activePlayer === "O") {
         return "X";
       }
-      return "0";
+      return "O";
+    },
+    gameStatusMessage() {
+      if (this.gameStatus === "win") {
+        return `${this.winPlayer}'s win!`;
+      } else if (this.gameStatus === "draw") {
+        return "Draw !";
+      }
+      return `${this.activePlayer}'s turn`;
+    },
+    gameStatusColor() {
+      if (this.gameStatus === "draw") {
+        return "statusDraw";
+      } else if (this.gameStatus === "win") {
+        return "statusWin";
+      }
+      return "statusTurn";
     },
   },
+  watch: {
+    // для изменения статусов сообщения и цвета
+    // gameStatus() {
+    //   if (this.gameStatus === "win") {
+    //     this.gameStatusColor = "statusWin";
+    //     return;
+    //   } else if (this.gameStatus === "draw") {
+    //     this.gameStatusColor = "statusDraw";
+    //     this.gameStatusMessage = "Draw !";
+    //     return;
+    //   }
+    //   this.gameStatusMessage = `${this.activePlayer}'s turn`;
+    // },
+  },
+
   methods: {
     changePlayer() {
       this.activePlayer = this.nonActivePlayer;
@@ -103,29 +138,9 @@ export default {
     },
     gameIsWon() {
       Event.$emit("win", this.activePlayer);
-      this.gameStatusMessage = `${this.activePlayer} Wins !`;
+      this.winPlayer = this.activePlayer;
       Event.$emit("freeze");
       return "win";
-    },
-  },
-  watch: {
-    // для изменения статусов сообщения и цвета
-    gameStatus() {
-      if (this.gameStatus === "win") {
-        this.gameStatusColor = "statusWin";
-
-        this.gameStatusMessage = `${this.activePlayer} Wins !`;
-
-        return;
-      } else if (this.gameStatus === "draw") {
-        this.gameStatusColor = "statusDraw";
-
-        this.gameStatusMessage = "Draw !";
-
-        return;
-      }
-
-      this.gameStatusMessage = `${this.activePlayer}'s turn`;
     },
   },
 };
